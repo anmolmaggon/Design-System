@@ -1,0 +1,5 @@
+
+figma-mcp-client.js
+.env
+node_modules/
+*.json
