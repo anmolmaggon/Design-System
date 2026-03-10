@@ -106,22 +106,57 @@ The absolute worst outcome is a component that works but has an invisible archit
 
 ---
 
-## 3. PRE-BUILD AUDIT CHECKLIST
+## 3. ICON SOURCING RULES
+
+### 3.1 Functional Icons (Specific Purpose)
+
+When a component needs an icon with **specific semantic meaning** (checkbox indicator, radio button, toggle, navigation arrow, close button, etc.):
+
+1. **First choice: Google Material Icons** from the `Icons` page → `Google Icons` section (3,480+ icons available)
+2. Search for the icon by its Material Design name (e.g., `radio_button_unchecked`, `radio_button_checked`, `check_box`, `check_box_outline_blank`, `close`, `arrow_forward`)
+3. If the needed icon is **not found** in Google Icons, **ask the designer** which library to use
+4. **Always confirm with the designer** if there's a custom/alternative library they prefer for this specific use case
+
+### 3.2 Generic / Decorative Icons (Placeholder)
+
+When a component uses an icon as a **generic placeholder** that the consumer will swap out (e.g., a button with a trailing icon, a card with a leading icon):
+
+1. Use a **neutral placeholder icon** from Google Icons (e.g., `star`, `add`, `arrow_forward`)
+2. The specific icon doesn't matter because the consumer will Instance Swap it
+3. Focus on getting the **size and spacing** correct, not the specific icon choice
+
+### 3.3 Decision Matrix
+
+| Icon Type | Example | Source | Instance Swap? |
+|-----------|---------|--------|----------------|
+| **Functional indicator** | Radio circle, Checkbox, Toggle | Google Icons (specific name) | ✅ Yes — different states swap to different icons |
+| **Functional navigation** | Back arrow, Close X, Menu | Google Icons (specific name) | ⚠️ Ask designer — may be fixed or swappable |
+| **Generic placeholder** | Button trailing icon, Card icon | Google Icons (any neutral icon) | ✅ Yes — consumer decides the icon |
+| **Custom/brand** | Logo, Brand mark | Ask designer | ❌ Typically fixed |
+
+> [!IMPORTANT]
+> **Never use a sub-component or icon from a different library without confirming with the designer.** If you find a similar component from another library/page, stop and ask: "I found `Radio Buttons` on the current page, but should we use `radio_button_unchecked` from Google Icons instead?"
+
+---
+
+## 4. PRE-BUILD AUDIT CHECKLIST
 
 Before building any component, verify:
 
 - [ ] **Tokens:** All required semantic tokens exist (colors, spacing, border radius)
 - [ ] **Text Styles:** All required text styles exist, including variants (underline, caps)
-- [ ] **Icons:** All required icon components exist and have valid component keys
+- [ ] **Icons:** All required icons identified + sourced from correct library (see Section 3)
+- [ ] **Icon type classified:** Functional vs. generic — determines Instance Swap requirement
 - [ ] **Component Token Naming** follows `[Component].[Variant].[Property].[State]`
 - [ ] **States matrix** is complete (Default, Hover, Disabled, etc.)
 - [ ] **Platform scope** is clear (Mobile-only? Web-only? Both?)
+- [ ] **Documentation sheet** will be created after the build (see Section 5, Step 7)
 
 If any check fails, flag it (see Section 1.2) and wait for designer approval before proceeding.
 
 ---
 
-## 4. BUILD ORDER-OF-OPERATIONS
+## 5. BUILD ORDER-OF-OPERATIONS
 
 Follow this **exact sequence** to avoid style detachment and binding failures:
 
@@ -167,22 +202,57 @@ Build the component set structure with all variants defined by properties (Type,
 
 **Why this order matters:** Setting fills *before* applying a text style can cause the style to detach, because the fill overrides a property the style was managing. Always: **style first → fills second**.
 
-### Step 4: Wire Instance Swap Properties
-For icons or swappable sub-components:
-1. Add the Instance Swap property to the component set
-2. Set the default component key
-3. Verify the swap works by toggling in Figma
+### Step 4: Wire Instance Swap Properties (MANDATORY for icons)
+
+> [!IMPORTANT]
+> **Every icon or indicator sub-component MUST have an Instance Swap property** unless the designer explicitly says otherwise. This is not optional.
+
+For each icon/indicator in the component:
+1. **Identify all icon instances** in the component tree
+2. **Add Instance Swap property** to the component set for each icon
+3. **Set the default component key** (from Google Icons or the correct library)
+4. **Verify** the swap works by checking `componentProperties` on the instance
+5. If an icon should NOT be swappable, **document why** (e.g., "Close icon is fixed per designer")
 
 ### Step 5: Wire Boolean & Text Properties
 - Boolean: show/hide elements (e.g., `showTrailingIcon`)
 - Text: editable content (e.g., `Label`)
 
 ### Step 6: Screenshot & Validate
-Capture a screenshot of every variant and run the Post-Build Validation Checklist (Section 6).
+Capture a screenshot of every variant and run the Post-Build Validation Checklist (Section 7).
+
+### Step 7: Create Documentation Sheet (MANDATORY)
+
+Every component **must** have a documentation/specification sheet created alongside it. This is a Figma Section placed near the component on the same page.
+
+**Required sections in the documentation sheet:**
+
+1. **Component Name** — Title text (heading style)
+2. **Description** — 1-2 sentence explanation of what the component is and when to use it
+3. **Component Preview** — An instance of the component showing each variant
+4. **Component Properties Table** — All properties with their type, values, and defaults:
+   ```
+   Property    Type       Values
+   ─────────────────────────────────────────
+   State       VARIANT    Unselected / Selected
+   Label       TEXT       "Label" (default)
+   Icon        INSTANCE   radio_button_unchecked (default)
+   ```
+5. **Design Tokens Table** — Token names, alias chains, and resolved values:
+   ```
+   Token                              Chain                                  Value
+   ──────────────────────────────────────────────────────────────────────────────────
+   Padded Radio Button/Bg/Default     → Brand_Neutral/10                     #F2F2F6
+   Padded Radio Button/Text/Default   → Text Color/Primary → Brand_Neutral/90  #1E223C
+   ```
+6. **Anatomy** — Visual breakdown showing which part maps to which token (optional but recommended)
+7. **Usage Notes** — Do's and Don'ts, edge cases, accessibility notes (optional)
+
+**Layout:** Create as a Figma Section named `[Component Name] — Component Spec` with a white background, ~720px wide.
 
 ---
 
-## 5. COMPONENT PROPERTIES REFERENCE
+## 6. COMPONENT PROPERTIES REFERENCE
 
 ### 5.1 Property Types
 
@@ -235,7 +305,7 @@ To correctly wire an Instance Swap:
 
 ---
 
-## 6. POST-BUILD VALIDATION CHECKLIST
+## 7. POST-BUILD VALIDATION CHECKLIST
 
 After building, run through **every** check:
 
@@ -254,9 +324,11 @@ After building, run through **every** check:
 
 ### Property Validation
 - [ ] Instance Swap toggles correctly between icon options
+- [ ] **Every icon has Instance Swap** (or explicit waiver documented)
 - [ ] Boolean properties show/hide the correct elements
 - [ ] Text properties update the label content
 - [ ] Variant properties switch between all states/types/sizes
+- [ ] **Documentation sheet created** with properties table, token table, and description
 
 ### Token Chain Validation
 - [ ] Component tokens → Semantic tokens → Primitive values (no tier skipping)
@@ -265,7 +337,7 @@ After building, run through **every** check:
 
 ---
 
-## 7. KNOWN GOTCHAS & FAILURE MODES
+## 8. KNOWN GOTCHAS & FAILURE MODES
 
 ### 7.1 Typography
 
@@ -301,7 +373,17 @@ After building, run through **every** check:
 
 ---
 
-## 8. ESCALATION RULES
+### 8.5 Icon Sourcing
+
+| Problem | Cause | Fix |
+|---------|-------|-----|
+| Icon from wrong library | Used a component from current page instead of Google Icons | Always search `Icons` page → `Google Icons` section first |
+| Instance Swap missing on icon | Treated icon as static child | Every icon MUST have Instance Swap unless explicitly waived |
+| No documentation sheet | Skipped Step 7 | Always create spec sheet after build |
+
+---
+
+## 9. ESCALATION RULES
 
 If you encounter any of these situations, **stop and escalate to the designer immediately**:
 
