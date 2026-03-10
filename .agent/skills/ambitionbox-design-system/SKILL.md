@@ -352,6 +352,10 @@ Text styles combine font properties into composite tokens. AmbitionBox uses thes
 | **Body** | L, M (Default), S, XS | Regular | Paragraphs, descriptions |
 | **Meta** | L, M (normal), M (All Caps), S (normal), S (All Caps) | Regular | Timestamps, counts, metadata |
 | **Label** | L, M, S | SemiBold | Buttons, form labels, navigation |
+| **Label (Underline)** | M Underline, S Underline | SemiBold | Link labels with underline decoration |
+
+> [!NOTE]
+> For the full text styles inventory and build execution rules, see [COMPONENT_BUILD.md](./COMPONENT_BUILD.md).
 
 **Naming Pattern:**
 ```
